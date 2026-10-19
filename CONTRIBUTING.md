@@ -49,7 +49,7 @@ and document its capability in the permission settings.
 
 - Keep the change focused and explain the user-visible effect.
 - Include the commands you ran and the device/Android version you tested with.
-- Update `README.md`, `README.zh-CN.md`, and `CHANGELOG.md` for behavior
+- Update `README.md`, `README.en.md`, and `CHANGELOG.md` for behavior
   changes.
 - Do not commit a real device serial, personal screenshots, `phone-files/`,
   permission config files, or absolute paths from your machine.

@@ -1,176 +1,147 @@
 # dsh-phone-mirror
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+简体中文 | [English](README.en.md)
 
-A [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) plugin that mirrors an Android phone in the right sidebar and lets the agent operate it from a conversation.
+一个 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 插件：在右侧边栏镜像一台 Android 手机，并允许 AI 在对话里操作手机。
 
-The mirror is built on the official [scrcpy](https://github.com/Genymobile/scrcpy) server (bundled, version 4.1) over `adb`; the browser decodes H.264 with jmuxer and MSE.
+镜像基于官方 [scrcpy](https://github.com/Genymobile/scrcpy) server（仓库内自带 4.1），通过 `adb` 连接，浏览器端用 jmuxer + MSE 解码 H.264。
 
-## Features
+## 功能
 
-- Live screen mirror in a right-sidebar tab; open it from the phone icon at the bottom of the left sidebar.
-- Touch and drag on the video for taps and swipes; toolbar keys for back, home, recents, power, wake and volume.
-- Text input, including Chinese and other non-ASCII text (via a clipboard paste through scrcpy).
-- Agent tools: screenshots, accessibility-tree reading, taps, swipes, keys, text, app/URL launching, and two-way file transfer.
-- Three-state permissions per capability (block / ask / allow), with presets and a persisted settings file.
-- No build step, no native addons, no cloud service. The browser half is plain JavaScript loaded by the DSH module loader.
+- 右侧边栏实时投屏；入口在左侧边栏底部（设置按钮旁）的手机图标。
+- 点击/拖动画面 = 触摸/滑动；工具栏提供返回、主页、最近任务、电源、唤醒、音量键。
+- 文字输入，支持中文等非 ASCII 文本（通过 scrcpy 剪贴板粘贴）。
+- 对话工具：截图、控件树、点击、滑动、按键、输入、打开应用/URL，以及双向文件传输。
+- 每类能力三态权限（禁止 / 需确认 / 直接），带预设模式，配置持久化。
+- 无构建步骤、无原生依赖、无云服务。
 
-## Requirements
+## 环境要求
 
-- DeepSeek Harness with the Web UI and the `sidebarRightTabs` / `sidebarRight` services (current releases provide both).
-- Node.js 20 or newer for the host half.
-- Android 7+ with USB debugging enabled and the computer authorized on the phone (`adb devices` shows `device`).
-- `adb` from Android platform-tools. The plugin checks `ADB_PATH`, `ADB`, `ANDROID_HOME`, `ANDROID_SDK_ROOT`, the standard SDK locations and `PATH`.
+- 带 Web UI 的 DeepSeek Harness（当前版本提供 `sidebarRightTabs` / `sidebarRight` 服务）。
+- Node.js 20+（宿主半区）。
+- Android 7+，开启「开发者选项 → USB 调试」，并在手机上允许这台电脑（`adb devices` 显示 `device`）。
+- Android platform-tools 里的 `adb`。插件会检查 `ADB_PATH`、`ADB`、`ANDROID_HOME`、`ANDROID_SDK_ROOT`、常见 SDK 路径和 `PATH`。
 
-The scrcpy server is bundled under `resources/`; installing scrcpy separately is not required.
+scrcpy server 已包含在 `resources/` 中，不需要另外安装 scrcpy。
 
-## Installation
+## 安装
 
-This repository is a DSH plugin bundle. Clone it, then install the directory through DSH:
+本仓库是一个 DSH 插件 bundle。克隆后，在 DSH 的插件面板里选择「从本地路径安装 bundle」，选中 `dsh-phone-mirror` 目录即可。
 
-1. Open **Plugins** in DSH.
-2. Choose the install-from-local-path / install-bundle action.
-3. Select the cloned `dsh-phone-mirror` directory.
+安装后刷新一次 Web UI，让浏览器半区加载。手机图标会出现在左侧边栏底部、设置按钮旁边。
 
-For profile tooling, the equivalent operation is installing this package directory as a bundle
-(package name `dsh-phone-mirror`).
+## 使用
 
-After installation, refresh the Web UI once so the client half loads. The phone icon appears at the
-bottom of the left sidebar, next to Settings.
+1. 用数据线连接手机，开启 USB 调试，并在手机上允许这台电脑。
+2. 点左侧边栏底部的手机图标。
+3. 右侧打开「手机镜像」标签页，首帧可能需要几秒。
+4. 可以直接在面板里操作，也可以在对话里让 AI 操作。
 
-## Usage
-
-1. Connect the phone by USB, enable **Developer options → USB debugging**, and allow the computer.
-2. Click the phone icon at the bottom of the left sidebar.
-3. The right sidebar opens a **Phone Mirror** tab. The first frame may take a few seconds.
-4. Use the panel directly, or ask the agent in chat.
-
-Panel actions (manual, public API):
-
-| Action | How |
+| 面板操作 | 方式 |
 |---|---|
-| Tap / swipe | Click or drag on the video |
-| Back / home / recents / power / wake | Toolbar buttons |
-| Volume | Toolbar buttons |
-| Text | Type in the input row and press Enter |
-| Pause / resume video | Pause button |
-| Reconnect / stop | Panel buttons |
+| 点击 / 滑动 | 在画面上点击或拖动 |
+| 返回 / 主页 / 最近任务 / 电源 / 唤醒 | 工具栏按钮 |
+| 音量 | 工具栏按钮 |
+| 文字 | 在输入框输入后按 Enter |
+| 暂停 / 继续 | 暂停按钮 |
+| 重连 / 停止 | 面板按钮 |
 
-### Agent tools
+### 对话工具
 
-| Tool | Purpose |
+| 工具 | 作用 |
 |---|---|
-| `phone_devices` | List devices, authorization state, mirror state and permission mode |
-| `phone_screenshot` | Save a PNG under `<workspace>/phone-files/` and return its path |
-| `phone_ui` | Read accessibility nodes with text, bounds, centers and clickable flags |
-| `phone_tap` | Tap or long-press by pixel `x`/`y` or normalized `fx`/`fy` |
-| `phone_swipe` | Swipe between two points |
-| `phone_key` | Press back, home, recents, power, wake, volume or enter |
-| `phone_text` | Type into the focused input (non-ASCII uses clipboard paste) |
-| `phone_open` | Launch an app package or open a URL |
-| `phone_ls` | List a phone directory |
-| `phone_pull` | Copy a phone file/directory to the computer |
-| `phone_push` | Copy a computer file/directory to the phone |
+| `phone_devices` | 列出设备、授权状态、投屏状态和当前权限 |
+| `phone_screenshot` | 截图保存到 `<workspace>/phone-files/`，返回路径 |
+| `phone_ui` | 读取控件树（文字、bounds、中心点、可点击） |
+| `phone_tap` | 按像素 `x`/`y` 或比例 `fx`/`fy` 点击/长按 |
+| `phone_swipe` | 两点之间滑动 |
+| `phone_key` | 返回、主页、最近任务、电源、唤醒、音量、回车 |
+| `phone_text` | 向已聚焦输入框输入文字（非 ASCII 走剪贴板） |
+| `phone_open` | 打开应用包名或 URL |
+| `phone_ls` | 列手机目录 |
+| `phone_pull` | 手机 → 电脑 |
+| `phone_push` | 电脑 → 手机 |
 
-`phone_pull` defaults to `<workspace>/phone-files/`; `phone_push` defaults to
-`/sdcard/Download/`. Transfers are limited to 300 MB per file unless `force: true` is passed.
+`phone_pull` 默认保存到 `<workspace>/phone-files/`，`phone_push` 默认传到 `/sdcard/Download/`。单文件默认上限 300 MB，可用 `force: true` 放开。
 
-## Permissions
+## 权限
 
-Open the mirrored panel and click the shield icon at the bottom.
+打开镜像面板，点底栏的盾牌图标。
 
-Modes:
+模式：
 
-- **Full control** — everything runs immediately.
-- **Mirror only** — only screen viewing is allowed; control, keys, text and files are blocked.
-- **Ask each time** — screen viewing is allowed; the other capabilities ask through the DSH approval flow.
-- **Custom** — set each capability independently.
+- **完全控制**：全部直接执行。
+- **仅投屏**：只允许查看屏幕，控制、按键、输入、文件全部禁止。
+- **需确认**：查看允许，其余每次走 DSH 审批弹窗。
+- **自定义**：逐项设置。
 
-Capabilities: **view screen**, **control**, **keys**, **input**, **files**. Each is one of
-**block / ask / allow**.
+五类能力：**查看屏幕 / 控制 / 按键 / 输入 / 文件**，每类三态：**禁止 / 需确认 / 直接**。
 
-Permissions apply to agent tools only; manual actions in the panel are not affected. Settings are
-stored in `$DSH_HOME/dsh-phone-mirror.json` (or `~/.dsh/dsh-phone-mirror.json`) and survive restarts
-and plugin reloads. The default is **ask each time**.
+权限只约束对话里的 AI 工具；面板里手动点击、按键、输入不受影响。配置保存在 `$DSH_HOME/dsh-phone-mirror.json`（或 `~/.dsh/dsh-phone-mirror.json`），重启和插件重载后继续生效。默认是「需确认」。
 
-## Configuration
+## 配置
 
-| Environment variable | Default | Purpose |
+| 环境变量 | 默认 | 说明 |
 |---|---|---|
-| `ADB_PATH` | auto-detected | adb executable |
-| `DSH_PHONE_SERIAL` | first online device | Serial used by tools when `serial` is omitted |
-| `PHONE_MIRROR_MAX_SIZE` | `720` | Long-edge pixel cap for the encoded video |
-| `PHONE_MIRROR_MAX_FPS` | `30` | Encoder frame-rate cap |
-| `PHONE_MIRROR_BIT_RATE` | `4000000` | Encoder bit rate |
+| `ADB_PATH` | 自动查找 | adb 可执行文件 |
+| `DSH_PHONE_SERIAL` | 第一台在线设备 | 工具未传 `serial` 时使用 |
+| `PHONE_MIRROR_MAX_SIZE` | `720` | 编码画面长边像素上限 |
+| `PHONE_MIRROR_MAX_FPS` | `30` | 最高帧率 |
+| `PHONE_MIRROR_BIT_RATE` | `4000000` | 视频码率 |
 
-If `adb` is not on `PATH`, set `ADB_PATH`, or add an `"adbPath"` field to the
-permission config JSON (for example `"adbPath": "/opt/android/platform-tools/adb"`).
-The panel settings do not edit that field.
+如果 `adb` 不在 `PATH`，可以设置 `ADB_PATH`，或在权限配置 JSON 里加
+`"adbPath": "/path/to/adb"`（例如 `"adbPath": "/opt/android/platform-tools/adb"`）。
+面板设置不编辑这个字段。
 
-## Architecture
+## 实现
 
 ```
-index.js        Host half: adb/scrcpy lifecycle, H.264 packet parser,
-                local WebSocket server, control messages, tools, permissions
-client.js       Browser half: right-sidebar tab, jmuxer/MSE video,
-                touch/key/text toolbar, permission settings
-resources/      scrcpy-server 4.1 and jmuxer
-locale/         plugin metadata and panel strings
+index.js        宿主：adb/scrcpy 生命周期、H.264 解析、本机 WebSocket、
+                控制消息、工具、权限
+client.js       浏览器：右侧标签页、jmuxer/MSE 画面、触摸/按键/文字工具栏、权限设置
+resources/      scrcpy-server 4.1 与 jmuxer
+locale/         插件元数据与面板文案
 ```
 
-- Video: scrcpy `tunnel_forward=true`, `max_size`, `max_fps`; the host connects the video and
-  control TCP channels through an `adb forward` tunnel.
-- The host serves the browser a raw H.264 stream over a loopback WebSocket. Binary messages are
-  packets; JSON messages carry size, state and commands.
-- The browser decodes with jmuxer/MSE and maps pointer positions onto the encoded frame.
-- Input uses the scrcpy control socket. ASCII text uses `INJECT_TEXT`; non-ASCII text uses
-  `SET_CLIPBOARD` with paste, which overwrites the phone clipboard.
-- File transfer uses `adb push` / `adb pull`.
-- The host binds its WebSocket to `127.0.0.1` and validates the browser `Origin`/`Host`.
+- 视频：scrcpy `tunnel_forward=true`、`max_size`、`max_fps`，通过 `adb forward` 隧道连接 video/control 两路 TCP。
+- 宿主通过本机 WebSocket 向浏览器发送裸 H.264 包；文本消息传尺寸、状态和命令。
+- 浏览器用 jmuxer/MSE 解码，并把指针位置映射到编码帧坐标。
+- 输入走 scrcpy control socket；ASCII 用 `INJECT_TEXT`，非 ASCII 用 `SET_CLIPBOARD` 加粘贴（会覆盖手机剪贴板）。
+- 文件传输走 `adb push` / `adb pull`。
+- 宿主 WebSocket 只绑定 `127.0.0.1`，并校验浏览器的 `Origin`/`Host`。
 
-## Security and privacy
+## 安全与隐私
 
-This plugin can control a phone and copy files. It is intentionally local-only:
+插件可以控制手机、复制文件，因此默认只在本机工作：
 
-- No cloud calls, analytics or remote endpoints.
-- The mirror socket binds loopback only and rejects non-loopback browser origins.
-- The permission settings gate agent tools; use **Mirror only** or **block** when the agent should
-  not control the device.
-- File paths are resolved against the current session workspace by default. Absolute paths are
-  accepted for explicit transfers.
-- Non-ASCII text injection writes to the phone clipboard.
+- 没有云调用、统计或远程端点。
+- 投屏 socket 只绑定回环地址，拒绝非回环来源。
+- 权限设置只约束 AI 工具；不想让 AI 操作时选「仅投屏」或「禁止」。
+- 文件路径默认相对当前会话工作区；显式传输可使用绝对路径。
+- 非 ASCII 文本注入会写入手机剪贴板。
 
-Report security issues privately as described in [SECURITY.md](SECURITY.md).
+安全问题请按 [SECURITY.md](SECURITY.md) 私下报告。
 
-## Development
+## 开发
 
-There is no build step. Edit `index.js` / `client.js` and reinstall or reload the bundle.
+没有构建步骤，直接改 `index.js` / `client.js`，然后重载 bundle。
 
 ```bash
-npm run check     # node --check for both halves
+npm run check
 ```
 
-The client half is a `window.__ModuleLoader__` factory and is served by DSH's client-module route.
-The host half is an ESM plugin exporting `inject` and `apply`.
+浏览器半区是 `window.__ModuleLoader__` 工厂；宿主半区是导出 `inject` 和 `apply` 的 ESM 插件。
 
-To test against a device:
+## 已知限制
 
-1. `adb devices` must list an authorized phone.
-2. Install the bundle, refresh the UI, open the panel.
-3. Call `phone_devices` from the agent, then `phone_screenshot` / `phone_ui`.
+- 一次只镜像一台设备（多设备可用 `serial`）。
+- 只有画面；没有声音、双向剪贴板同步和滚轮滚动。
+- 文字输入要求手机上已有输入框聚焦。
+- 密码框/安全输入框可能禁止剪贴板粘贴。
+- 「需确认」依赖当前 DSH 会话的审批策略。
+- 与 DeepSeek、Genymobile/scrcpy 无隶属关系。
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution workflow.
+## 许可证
 
-## Limitations
-
-- One device at a time per mirror session (choose a serial for multiple devices).
-- Video only; no audio, clipboard synchronization or wheel scrolling.
-- Text input requires a focused input on the phone.
-- Some password/secure fields reject clipboard paste.
-- The `ask` mode depends on the DSH approval policy of the current session.
-- Not affiliated with DeepSeek or Genymobile/scrcpy.
-
-## License
-
-MIT. See [LICENSE](LICENSE). Bundled third-party components and their licenses are listed in
-[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and [LICENSES/](LICENSES/).
+MIT，见 [LICENSE](LICENSE)。随包分发的第三方组件与许可证见
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) 和 [LICENSES/](LICENSES/)。
