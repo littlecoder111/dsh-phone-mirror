@@ -20,5 +20,3 @@ uses [Semantic Versioning](https://semver.org/).
 - Persisted permission settings in `$DSH_HOME/dsh-phone-mirror.json`.
 - DSH approval integration for the "ask each time" mode.
 - Chinese and non-ASCII text input via scrcpy clipboard paste.
-
-[0.1.0]: https://github.com/littlecoder111/dsh-phone-mirror/releases/tag/v0.1.0
