@@ -1,0 +1,40 @@
+{
+  "meta": {
+    "title": "Phone Mirror",
+    "description": "Mirror and control a USB-connected Android phone in the right sidebar with scrcpy: live video, touch, navigation keys and text input."
+  },
+  "panel": {
+    "title": "Phone Mirror",
+    "open": "Open phone mirror",
+    "connecting": "Connecting to phone…",
+    "starting": "Starting mirror…",
+    "ready": "Connected",
+    "stopped": "Mirror stopped",
+    "reconnect": "Reconnect",
+    "stop": "Stop mirror",
+    "back": "Back",
+    "home": "Home",
+    "recents": "Recents",
+    "power": "Power",
+    "volumeUp": "Volume +",
+    "volumeDown": "Volume -",
+    "wake": "Wake screen",
+    "textPlaceholder": "Text to send to the phone",
+    "send": "Send",
+    "clear": "Clear",
+    "loading": "Loading decoder…",
+    "touchHint": "Click to tap, drag to swipe",
+    "noDevice": "No authorized Android device found. Connect it by USB, enable Developer options → USB debugging, and allow this computer on the phone.",
+    "adbMissing": "adb was not found. Install Android platform-tools or set the ADB_PATH environment variable.",
+    "error": "Something went wrong",
+    "retry": "Retry",
+    "frame": "Frame",
+    "device": "Device",
+    "fps": "FPS",
+    "paused": "Paused",
+    "resume": "Resume",
+    "pause": "Pause",
+    "saved": "Screenshot saved",
+    "screenshot": "Save screenshot"
+  }
+}

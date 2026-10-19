@@ -1,0 +1,40 @@
+{
+  "meta": {
+    "title": "手机镜像",
+    "description": "在右侧边栏镜像并操作已连接的 Android 手机（scrcpy）：屏幕实时画面、触摸、返回/主页等按键和中文文字输入。"
+  },
+  "panel": {
+    "title": "手机镜像",
+    "open": "打开手机镜像",
+    "connecting": "正在连接手机…",
+    "starting": "正在启动投屏…",
+    "ready": "已连接",
+    "stopped": "投屏已停止",
+    "reconnect": "重新连接",
+    "stop": "停止投屏",
+    "back": "返回",
+    "home": "主页",
+    "recents": "最近任务",
+    "power": "电源键",
+    "volumeUp": "音量 +",
+    "volumeDown": "音量 -",
+    "wake": "唤醒屏幕",
+    "textPlaceholder": "输入要发送到手机的文字",
+    "send": "发送",
+    "clear": "清空",
+    "loading": "正在加载解码器…",
+    "touchHint": "点击画面 = 触摸，拖动 = 滑动",
+    "noDevice": "没有找到已授权的 Android 设备。请用数据线连接手机，打开「开发者选项 → USB 调试」，并在手机上允许这台电脑。",
+    "adbMissing": "没有找到 adb。请安装 Android 平台工具，或设置 ADB_PATH 环境变量。",
+    "error": "出错了",
+    "retry": "重试",
+    "frame": "画面",
+    "device": "设备",
+    "fps": "帧率",
+    "paused": "已暂停",
+    "resume": "继续",
+    "pause": "暂停",
+    "saved": "截图已保存",
+    "screenshot": "保存截图"
+  }
+}
