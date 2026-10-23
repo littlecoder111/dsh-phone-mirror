@@ -23,7 +23,7 @@
     "send": "Send",
     "clear": "Clear",
     "loading": "Loading decoder…",
-    "touchHint": "Click to tap, drag to swipe",
+    "touchHint": "Click to tap, drag to swipe, wheel to scroll",
     "noDevice": "No authorized Android device found. Connect it by USB, enable Developer options → USB debugging, and allow this computer on the phone.",
     "adbMissing": "adb was not found. Install Android platform-tools or set the ADB_PATH environment variable.",
     "error": "Something went wrong",

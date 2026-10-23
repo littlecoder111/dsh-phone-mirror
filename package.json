@@ -1,6 +1,6 @@
 {
   "name": "dsh-phone-mirror",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Mirror and control a USB-connected Android phone from the DeepSeek Harness right sidebar, with agent tools for touch, keys, text and file transfer.",
   "type": "module",
   "license": "MIT",

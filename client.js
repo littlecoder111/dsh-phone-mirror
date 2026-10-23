@@ -59,7 +59,7 @@ window.__ModuleLoader__.load({
       textPlaceholder: '输入要发送到手机的文字',
       send: '发送',
       loading: '正在加载解码器…',
-      hint: '点击画面 = 触摸，拖动 = 滑动',
+      hint: '点击画面 = 触摸，拖动 = 滑动，滚轮 = 滚动',
       noDevice: '没有找到已授权的 Android 设备。请用数据线连接手机，打开「开发者选项 → USB 调试」，并在手机上允许这台电脑。',
       unauthorized: '手机还没有授权这台电脑。请在手机弹窗里点「允许」，或重新插拔数据线。',
       adbMissing: '没有找到 adb。请安装 Android 平台工具，或设置 ADB_PATH 环境变量。',
@@ -117,7 +117,7 @@ window.__ModuleLoader__.load({
       textPlaceholder: 'Text to send to the phone',
       send: 'Send',
       loading: 'Loading decoder…',
-      hint: 'Click to tap, drag to swipe',
+      hint: 'Click to tap, drag to swipe, wheel to scroll',
       noDevice: 'No authorized Android device found. Connect it by USB, enable Developer options → USB debugging, and allow this computer on the phone.',
       unauthorized: 'The phone has not authorized this computer yet. Tap Allow on the phone, or reconnect the cable.',
       adbMissing: 'adb was not found. Install Android platform-tools or set the ADB_PATH environment variable.',
@@ -791,6 +791,41 @@ window.__ModuleLoader__.load({
           if (fx < 0 || fx > 1 || fy < 0 || fy > 1) return
           sendCommand({ type: 'touch', event: kind, fx, fy })
         }
+
+        React.useEffect(() => {
+          const video = videoRef.current
+          if (!video) return
+          function onWheel(event) {
+            if (!canControl) return
+            const { w, h } = frameRef.current
+            if (!w || !h) return
+            const rect = video.getBoundingClientRect()
+            const scale = Math.min(rect.width / w, rect.height / h)
+            const contentWidth = w * scale
+            const contentHeight = h * scale
+            const left = rect.left + (rect.width - contentWidth) / 2
+            const top = rect.top + (rect.height - contentHeight) / 2
+            const fx = (event.clientX - left) / contentWidth
+            const fy = (event.clientY - top) / contentHeight
+            if (fx < 0 || fx > 1 || fy < 0 || fy > 1) return
+            event.preventDefault()
+            let dx = event.deltaX
+            let dy = event.deltaY
+            if (event.deltaMode === 1) { dx *= 16; dy *= 16 }
+            else if (event.deltaMode === 2) { dx *= rect.width; dy *= rect.height }
+            if (!dx && !dy) return
+            // One mouse-wheel notch is ~100 px in browsers; scrcpy accepts [-16, 16].
+            sendCommand({
+              type: 'scroll',
+              fx,
+              fy,
+              dx: Math.max(-16, Math.min(16, dx / 100)),
+              dy: Math.max(-16, Math.min(16, -dy / 100)),
+            })
+          }
+          video.addEventListener('wheel', onWheel, { passive: false })
+          return () => video.removeEventListener('wheel', onWheel)
+        }, [canControl])
 
         const statusLabel = phase === 'ready' ? T('ready')
           : phase === 'error' ? T('error')

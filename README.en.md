@@ -11,7 +11,7 @@ The mirror is built on the official [scrcpy](https://github.com/Genymobile/scrcp
 ## Features
 
 - Live screen mirror in a right-sidebar tab; open it from the phone icon at the bottom of the left sidebar.
-- Touch and drag on the video for taps and swipes; toolbar keys for back, home, recents, power, wake and volume.
+- Touch, drag and mouse-wheel on the video for taps, swipes and vertical scrolling; toolbar keys for back, home, recents, power, wake and volume.
 - Text input, including Chinese and other non-ASCII text (via a clipboard paste through scrcpy).
 - Agent tools: screenshots, accessibility-tree reading, taps, swipes, keys, text, app/URL launching, and two-way file transfer.
 - Three-state permissions per capability (block / ask / allow), with presets and a persisted settings file.
@@ -52,6 +52,7 @@ Panel actions (manual, public API):
 | Action | How |
 |---|---|
 | Tap / swipe | Click or drag on the video |
+| Scroll | Rotate the mouse wheel over the video to scroll vertically |
 | Back / home / recents / power / wake | Toolbar buttons |
 | Volume | Toolbar buttons |
 | Text | Type in the input row and press Enter |
@@ -115,7 +116,7 @@ The panel settings do not edit that field.
 index.js        Host half: adb/scrcpy lifecycle, H.264 packet parser,
                 local WebSocket server, control messages, tools, permissions
 client.js       Browser half: right-sidebar tab, jmuxer/MSE video,
-                touch/key/text toolbar, permission settings
+                touch/wheel/key/text toolbar, permission settings
 resources/      scrcpy-server 4.1 and jmuxer
 locale/         plugin metadata and panel strings
 ```
@@ -124,7 +125,7 @@ locale/         plugin metadata and panel strings
   control TCP channels through an `adb forward` tunnel.
 - The host serves the browser a raw H.264 stream over a loopback WebSocket. Binary messages are
   packets; JSON messages carry size, state and commands.
-- The browser decodes with jmuxer/MSE and maps pointer positions onto the encoded frame.
+- The browser decodes with jmuxer/MSE and maps pointer and wheel positions onto the encoded frame.
 - Input uses the scrcpy control socket. ASCII text uses `INJECT_TEXT`; non-ASCII text uses
   `SET_CLIPBOARD` with paste, which overwrites the phone clipboard.
 - File transfer uses `adb push` / `adb pull`.
@@ -166,7 +167,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution workflow.
 ## Limitations
 
 - One device at a time per mirror session (choose a serial for multiple devices).
-- Video only; no audio, clipboard synchronization or wheel scrolling.
+- Video only; no audio or clipboard synchronization.
 - Text input requires a focused input on the phone.
 - Some password/secure fields reject clipboard paste.
 - The `ask` mode depends on the DSH approval policy of the current session.

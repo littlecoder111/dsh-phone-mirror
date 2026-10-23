@@ -547,6 +547,46 @@ function injectTouch(dev, action, fx, fy) {
   return { ok: true }
 }
 
+/**
+ * scrcpy 4.1 INJECT_SCROLL_EVENT (21 bytes, big-endian):
+ * type(1) + x(i32) + y(i32) + videoWidth(u16) + videoHeight(u16) +
+ * hScroll(i16 fixed-point) + vScroll(i16 fixed-point) + buttons(u32).
+ * The scroll values are in [-16, 16]; the wire format stores value/16.
+ */
+function injectScroll(dev, fx, fy, dx, dy) {
+  if (!dev.controlSock) return { ok: false, code: 'NO_CONTROL', error: 'control channel is not connected' }
+  const width = dev.st.width
+  const height = dev.st.height
+  if (!width || !height) return { ok: false, code: 'NO_SIZE', error: 'frame size is not known yet' }
+  const x = Math.max(0, Math.min(width - 1, Math.round(clamp01(fx) * (width - 1))))
+  const y = Math.max(0, Math.min(height - 1, Math.round(clamp01(fy) * (height - 1))))
+  const message = Buffer.alloc(21)
+  message[0] = 3
+  message.writeInt32BE(x, 1)
+  message.writeInt32BE(y, 5)
+  message.writeUInt16BE(width, 9)
+  message.writeUInt16BE(height, 11)
+  message.writeInt16BE(encodeScrollFixed(dx), 13)
+  message.writeInt16BE(encodeScrollFixed(dy), 15)
+  message.writeUInt32BE(0, 17)
+  dev.controlSock.write(message)
+  return { ok: true }
+}
+
+function clampScroll(value) {
+  const number = Number(value)
+  if (!Number.isFinite(number)) return 0
+  return number < -16 ? -16 : number > 16 ? 16 : number
+}
+
+function encodeScrollFixed(value) {
+  const normalized = clampScroll(value) / 16
+  let fixed = Math.trunc(normalized * 32768)
+  if (fixed >= 0x7fff) fixed = 0x7fff
+  if (fixed < -0x8000) fixed = -0x8000
+  return fixed
+}
+
 function injectText(dev, text) {
   if (!dev.controlSock) return { ok: false, code: 'NO_CONTROL', error: 'control channel is not connected' }
   const body = Buffer.from(String(text), 'utf8')
@@ -773,6 +813,11 @@ function handleWsText(dev, client, text) {
   if (message.type === 'touch') {
     const action = message.event === 'down' ? 0 : message.event === 'up' ? 1 : 2
     injectTouch(dev, action, message.fx, message.fy)
+    return
+  }
+  if (message.type === 'scroll') {
+    const result = injectScroll(dev, message.fx, message.fy, message.dx, message.dy)
+    if (!result.ok) client.sendText(JSON.stringify({ ok: false, error: result.error }))
     return
   }
   if (message.type === 'key') {
